@@ -24,34 +24,33 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
-// if empty date...
-app.get("/api", function (req, res) {
-  res.json({unix: new Date().getTime(), utc: new Date().toUTCString()});
-});
+app.get("/api/:date?", function (req, res) {
+  let dateInput = req.params.date;
 
-app.get('/api/:date', function(req, res) {
-  const date = req.params.date;
-  let unix;
-  let utc;
-  // if invalid date is entered
-  if(new Date(parseInt(date)).toString() === 'Invalid Date'){
-    res.json({'error': 'Invalid Date'});
-    return;
-  }
-  // if valid date is entered
-  if(new Date(parseInt(date)).getTime() === parseInt(date) 
-    && date.indexOf("-") === -1 
-    && date.indexOf(" ") === -1
-  ){
-    unix = parseInt(date);
-    utc = new Date(parseInt(date)).toUTCString()
-  } else {
-    unix = new Date(date).getTime();
-    utc = new Date(parseInt(unix)).toUTCString()
+  // if not date input
+  if (!dateInput) {
+    let currentDate = new Date();
+    res.json({
+      "unix":currentDate.getTime(),
+      "utc":currentDate.toUTCString()
+    })
   }
 
-  res.send({ unix,utc })
+  // if date is a string and contains only numbers
+  if (!isNaN(dateInput) && /^\d+$/.test(dateInput)) {
+    dateInput = parseInt(dateInput);
+  }
 
+  let dateObj = new Date(dateInput);
+
+  if (dateObj.toString() === 'Invalid Date') {
+    return res.json({ error: "Invalid Date" })
+  }
+
+  return res.json({
+    "unix":dateObj.getTime(),
+    "utc":dateObj.toUTCString()
+  })
 })
 
 // Listen on port set in environment variable or default to 3000
